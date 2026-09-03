@@ -127,10 +127,12 @@ class WebViewModel(private val repository: SavedPageRepository) : ViewModel() {
         } else {
             url
         }
+        _uiState.value = _uiState.value.copy(errorMessage = null)
         _webCommand.value = WebCommand.LoadUrl(target)
     }
 
     fun reload() {
+        _uiState.value = _uiState.value.copy(errorMessage = null)
         _webCommand.value = WebCommand.Reload
     }
 

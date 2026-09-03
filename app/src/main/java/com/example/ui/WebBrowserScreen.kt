@@ -77,7 +77,7 @@ fun WebBrowserScreen(
             ErrorView(
                 errorMessage = uiState.errorMessage ?: "",
                 onRetry = { viewModel.reload() },
-                onOpenSaved = { viewModel.openSavedSheet() }
+                onOpenSaved = { viewModel.reload() }
             )
         }
 

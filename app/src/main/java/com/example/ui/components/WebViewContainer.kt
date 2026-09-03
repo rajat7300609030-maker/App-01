@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.view.ViewGroup
+import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
@@ -108,6 +109,8 @@ fun WebViewContainer(
                     displayZoomControls = false
                     cacheMode = WebSettings.LOAD_DEFAULT
                     mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+                    // Ensure standard mobile user agent and viewport rendering
+                    userAgentString = userAgentString.replace("; wv", "") // Ensure full mobile browser capability
                 }
 
                 webViewClient = object : WebViewClient() {
@@ -163,6 +166,25 @@ fun WebViewContainer(
                             val desc = error?.description?.toString() ?: "Network error"
                             viewModel.onReceivedError(desc)
                         }
+                    }
+
+                    override fun onRenderProcessGone(
+                        view: WebView?,
+                        detail: RenderProcessGoneDetail?
+                    ): Boolean {
+                        // Return true to indicate the app has handled the renderer termination,
+                        // preventing an application-level crash (fatal signal / SIGKILL).
+                        view?.let { wv ->
+                            val currentUrl = wv.url ?: viewModel.uiState.value.currentUrl
+                            wv.post {
+                                try {
+                                    wv.destroy()
+                                } catch (ignored: Exception) {
+                                }
+                                viewModel.onReceivedError("Web page renderer reloaded. Tap retry to reload.")
+                            }
+                        }
+                        return true
                     }
                 }
 
